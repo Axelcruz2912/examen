@@ -4,12 +4,21 @@ import './App.css';
 function App() {
   const [pets, setPets] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://18.191.154.44/api/pets') // Reemplaza con la URL de tu API
-      .then((response) => response.json())
+    fetch('http://18.191.154.44/api/pets')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
       .then((data) => setPets(data))
-      .catch((error) => console.error('Error fetching pets:', error));
+      .catch((error) => {
+        console.error('Error fetching pets:', error);
+        setError('No se pudieron cargar los datos.');
+      });
   }, []);
 
   const filteredPets = pets.filter((pet) =>
@@ -25,15 +34,19 @@ function App() {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <div className="pet-list">
-        {filteredPets.map((pet) => (
-          <div key={pet.nombre} className="pet-card">
-            <h2>{pet.nombre}</h2>
-            <p>Edad: {pet.edad} años</p>
-            <p>Raza: {pet.raza}</p>
-          </div>
-        ))}
-      </div>
+      {error ? (
+        <p className="error-message">{error}</p>
+      ) : (
+        <div className="pet-list">
+          {filteredPets.map((pet) => (
+            <div key={pet.nombre} className="pet-card">
+              <h2>{pet.nombre}</h2>
+              <p>Edad: {pet.edad} años</p>
+              <p>Raza: {pet.raza}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
